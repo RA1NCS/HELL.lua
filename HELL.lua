@@ -1,347 +1,161 @@
-local csgo_weapons = require "gamesense/csgo_weapons"
+--------------------------------------------------------------------------------
+-- Caching common functions
+--------------------------------------------------------------------------------
+local ffi = require 'ffi'
+local uix = require 'gamesense/uix'
+local client_set_event_callback, client_unset_event_callback, client_userid_to_entindex, entity_get_local_player, ui_get, ui_new_checkbox, ui_new_combobox, ui_set_callback, ui_set_visible = client.set_event_callback, client.unset_event_callback, client.userid_to_entindex, entity.get_local_player, ui.get, ui.new_checkbox, ui.new_combobox, ui.set_callback, ui.set_visible
 
--- local variables for API functions. any changes to the line below will be lost on re-generation
-local client_exec, client_set_event_callback, client_unset_event_callback, client_userid_to_entindex, entity_get_local_player, entity_get_prop, ui_get, ui_set, ui_set_visible =
-      client.exec, client.set_event_callback, client.unset_event_callback, client.userid_to_entindex, entity.get_local_player, entity.get_prop, ui.get, ui.set, ui.set_visible
-
---autobuy v2
-local primary_weapons = {
-    "-", 
-    "AWP", 
-    "SCAR20/G3SG1", 
-    "Scout", 
-    "M4/AK47", 
-    "Famas/Galil", 
-    "Aug/SG553", 
-    "M249",
-    "Negev",
-    "Mag7/SawedOff", 
-    "Nova", 
-    "XM1014", 
-    "MP9/Mac10", 
-    "UMP45", 
-    "PPBizon", 
-    "MP7"
-}
-
-local secondary_weapons = {
-    "-", 
-    "CZ75/Tec9/FiveSeven", 
-    "P250", 
-    "Deagle/Revolver", 
-    "Dualies"
-}
-
-local grenades = {
-    "HE Grenade", 
-    "Molotov", 
-    "Smoke", 
-    "Flash", 
-    "Flash", 
-    "Decoy", 
-    "Decoy"
-}
-
-local utilities = {
-    "Armor", 
-    "Helmet", 
-    "Zeus", 
-    "Defuser"
-}
-
-local prices = {
-	["AWP"] = csgo_weapons["weapon_awp"].in_game_price,
-	["SCAR20/G3SG1"] = csgo_weapons["weapon_scar20"].in_game_price,
-	["Scout"] = csgo_weapons["weapon_ssg08"].in_game_price,
-	["M4/AK47"] = csgo_weapons["weapon_m4a1"].in_game_price,
-	["Famas/Galil"] = csgo_weapons["weapon_famas"].in_game_price,
-	["Aug/SG553"] = csgo_weapons["weapon_aug"].in_game_price,
-    ["M249"] = csgo_weapons["weapon_m249"].in_game_price,
-    ["Negev"] = csgo_weapons["weapon_negev"].in_game_price,
-	["Mag7/SawedOff"] = csgo_weapons["weapon_mag7"].in_game_price,
-	["Nova"] = csgo_weapons["weapon_nova"].in_game_price,
-	["XM1014"] = csgo_weapons["weapon_xm1014"].in_game_price,
-	["MP9/Mac10"] = csgo_weapons["weapon_mp9"].in_game_price,
-	["UMP45"] = csgo_weapons["weapon_ump45"].in_game_price,
-	["PPBizon"] = csgo_weapons["weapon_bizon"].in_game_price,
-	["MP7"] = csgo_weapons["weapon_mp7"].in_game_price,
-	["CZ75/Tec9/FiveSeven"] = csgo_weapons["weapon_tec9"].in_game_price,
-	["P250"] = csgo_weapons["weapon_p250"].in_game_price,
-	["Deagle/Revolver"] = csgo_weapons["weapon_deagle"].in_game_price,
-	["Dualies"] = csgo_weapons["weapon_elite"].in_game_price,
-	["HE Grenade"] = csgo_weapons["weapon_hegrenade"].in_game_price,
-	["Molotov"] = csgo_weapons["weapon_molotov"].in_game_price,
-	["Smoke"] = csgo_weapons["weapon_smokegrenade"].in_game_price,
-	["Flash"] = csgo_weapons["weapon_flashbang"].in_game_price,
-	["Decoy"] = csgo_weapons["weapon_decoy"].in_game_price,
-	["Armor"] = csgo_weapons["item_kevlar"].in_game_price,
-	["Helmet"] = csgo_weapons["item_assaultsuit"].in_game_price,
-	["Zeus"] = csgo_weapons["weapon_taser"].in_game_price,
-    ["Defuser"] = csgo_weapons["item_cutters"].in_game_price,
-    ["-"] = 0
-}
-
-local commands = {
-	["AWP"] = "buy awp",
-	["SCAR20/G3SG1"] = "buy scar20",
-	["Scout"] = "buy ssg08",
-	["M4/AK47"] = "buy m4a1",
-	["Famas/Galil"] = "buy famas",
-	["Aug/SG553"] = "buy aug",
-    ["M249"] = "buy m249",
-    ["Negev"] = "buy negev",
-	["Mag7/SawedOff"] = "buy mag7",
-	["Nova"] = "buy nova",
-	["XM1014"] = "buy xm1014",
-	["MP9/Mac10"] = "buy mp9",
-	["UMP45"] = "buy ump45",
-	["PPBizon"] = "buy bizon",
-	["MP7"] = "buy mp7",
-	["CZ75/Tec9/FiveSeven"] = "buy tec9",
-	["P250"] = "buy p250",
-	["Deagle/Revolver"] = "buy deagle",
-	["Dualies"] = "buy elite",
-	["HE Grenade"] = "buy hegrenade",
-	["Molotov"] = "buy molotov",
-	["Smoke"] = "buy smokegrenade",
-	["Flash"] = "buy flashbang",
-	["Decoy"] = "buy decoy",
-	["Armor"] = "buy vest",
-	["Helmet"] = "buy vesthelm",
-	["Zeus"] = "buy taser 34",
-    ["Defuser"] = "buy defuser",
-    ["-"] = ""
-}
-
---new menu
-local menu = {
-    enabled = ui.new_checkbox("MISC", "Miscellaneous", "Autobuy (v2)"),
-    hide = ui.new_checkbox("MISC", "Miscellaneous", "Hide autobuy"),
-    primary = ui.new_combobox("MISC", "Miscellaneous", "Primary", primary_weapons),
-    secondary = ui.new_combobox("MISC", "Miscellaneous", "Secondary", secondary_weapons),
-    grenades = ui.new_multiselect("MISC", "Miscellaneous", "Grenades", grenades),
-    utilities = ui.new_multiselect("MISC", "Miscellaneous", "Utilities", utilities),
-    cost_based = ui.new_checkbox("MISC", "Miscellaneous", "Cost based"),
-    threshold = ui.new_slider("MISC", "Miscellaneous", "Balance override", 0, 16000, 0, true, "$", 1, {[0] = "Auto"}),
-    primary_2 = ui.new_combobox("MISC", "Miscellaneous", "Backup primary", primary_weapons),
-    secondary_2 = ui.new_combobox("MISC", "Miscellaneous", "Backup secondary", secondary_weapons),
-    grenades_2 = ui.new_multiselect("MISC", "Miscellaneous", "Backup grenades", grenades),
-    utilities_2 = ui.new_multiselect("MISC", "Miscellaneous", "Backup utilities", utilities),
-}
-
---weapon prices
-local weapon_cost = 0
-
-local function calculate_weapon_prices()
-    weapon_cost = 0
-    --utilities
-	local utility_purchase = ui_get(menu.utilities)
-	for i = 1, #utility_purchase do
-        local n = utility_purchase[i]
-
-        weapon_cost = weapon_cost + prices[n]
-    end
-
-    --secondary
-    weapon_cost = weapon_cost + prices[ui_get(menu.secondary)]
-
-    --primary
-    weapon_cost = weapon_cost + prices[ui_get(menu.primary)]
-    
-    --grenades
-    local grenade_purchase = ui_get(menu.grenades)
-    for i = 1, #grenade_purchase do
-        local n = grenade_purchase[i]
-
-        weapon_cost = weapon_cost + prices[n]
-    end
+--------------------------------------------------------------------------------
+-- FFI functions
+--------------------------------------------------------------------------------
+local function bind_signature(module, interface, signature, typestring)
+	local interface = client.create_interface(module, interface) or error("invalid interface", 2)
+	local instance = client.find_signature(module, signature) or error("invalid signature", 2)
+	local success, typeof = pcall(ffi.typeof, typestring)
+	if not success then
+		error(typeof, 2)
+	end
+	local fnptr = ffi.cast(typeof, instance) or error("invalid typecast", 2)
+	return function(...)
+		return fnptr(interface, ...)
+	end
 end
 
--- split into two funcs because otherwise the storing gets fked up
-local logged_grenades_full = {}
-local logged_grenades_eco = {}
+local function vmt_entry(instance, index, type)
+	return ffi.cast(type, (ffi.cast("void***", instance)[0])[index])
+end
 
-local function grenade_limit_callback_full()
-	local total_nades = ui_get(menu.grenades)
+local function vmt_bind(module, interface, index, typestring)
+	local instance = client.create_interface(module, interface) or error("invalid interface")
+	local success, typeof = pcall(ffi.typeof, typestring)
+	if not success then
+		error(typeof, 2)
+	end
+	local fnptr = vmt_entry(instance, index, typeof) or error("invalid vtable")
+	return function(...)
+		return fnptr(instance, ...)
+	end
+end
 
-	if #total_nades > 4 then
-		ui_set(menu.grenades, logged_grenades)
-		return
+--------------------------------------------------------------------------------
+-- Constants, variables, and data structures
+--------------------------------------------------------------------------------
+local enable_ref
+local head_sound_ref
+local body_sound_ref
+local volume_ref
+
+local sound_names = {}
+local sound_name_to_file = {}
+
+local int_ptr	   = ffi.typeof("int[1]")
+local char_buffer   = ffi.typeof("char[?]")
+
+local find_first	= bind_signature("filesystem_stdio.dll", "VFileSystem017", "\x55\x8B\xEC\x6A\x00\xFF\x75\x10\xFF\x75\x0C\xFF\x75\x08\xE8\xCC\xCC\xCC\xCC\x5D", "const char*(__thiscall*)(void*, const char*, const char*, int*)")
+local find_next	 = bind_signature("filesystem_stdio.dll", "VFileSystem017", "\x55\x8B\xEC\x83\xEC\x0C\x53\x8B\xD9\x8B\x0D\xCC\xCC\xCC\xCC", "const char*(__thiscall*)(void*, int)")
+local find_close	= bind_signature("filesystem_stdio.dll", "VFileSystem017", "\x55\x8B\xEC\x53\x8B\x5D\x08\x85", "void(__thiscall*)(void*, int)")
+
+local current_directory = bind_signature("filesystem_stdio.dll", "VFileSystem017", "\x55\x8B\xEC\x56\x8B\x75\x08\x56\xFF\x75\x0C", "bool(__thiscall*)(void*, char*, int)")
+local add_to_searchpath = bind_signature("filesystem_stdio.dll", "VFileSystem017", "\x55\x8B\xEC\x81\xEC\xCC\xCC\xCC\xCC\x8B\x55\x08\x53\x56\x57", "void(__thiscall*)(void*, const char*, const char*, int)")
+local find_is_directory = bind_signature("filesystem_stdio.dll", "VFileSystem017", "\x55\x8B\xEC\x0F\xB7\x45\x08", "bool(__thiscall*)(void*, int)")
+
+local sndplaydelay = cvar.sndplaydelay
+local native_Surface_PlaySound = vmt_bind("vguimatsurface.dll", "VGUI_Surface031", 82, "void(__thiscall*)(void*, const char*)")
+
+--------------------------------------------------------------------------------
+-- Utility functions
+--------------------------------------------------------------------------------
+local function collect_files()
+	local files = {}
+	local file_handle = int_ptr()
+	local file = find_first("*", "XGAME", file_handle)
+	while file ~= nil do
+		local file_name = ffi.string(file)
+		if find_is_directory(file_handle[0]) == false and (file_name:find(".mp3") or file_name:find(".wav")) then
+			files[#files+1] = file_name
+		end
+		file = find_next(file_handle[0])
+	end
+	find_close(file_handle[0])
+	return files
+end
+
+local function normalize_file_name(name)
+	if name:find("_") then
+		name = name:gsub("_", " ")
+	end
+	if name:find(".mp3") then
+		name = name:gsub(".mp3", "")
+	end
+	if name:find(".wav") then
+		name = name:gsub(".wav", "")
+	end
+	return name
+end
+
+--------------------------------------------------------------------------------
+-- Callback functions
+--------------------------------------------------------------------------------
+local function on_player_hurt(e)
+	if client_userid_to_entindex(e.attacker) == entity_get_local_player() then
+		local sound_file = sound_name_to_file[e.hitgroup == 1 and ui_get(head_sound_ref) or ui_get(body_sound_ref)]
+		if sound_file then
+			for i=1, ui_get(volume_ref) do
+				native_Surface_PlaySound(sound_file)
+			end
+		end
+	end
+end
+
+local function on_player_blind(e)
+	if client_userid_to_entindex(e.attacker) == entity_get_local_player() then
+		local sound_file = sound_name_to_file[ui_get(body_sound_ref)]
+		sndplaydelay:invoke_callback(0, sound_file)
+	end
+end
+
+local function on_hit_sound_toggle(ref, value)
+	local state = value or ui_get(ref)
+	ui_set_visible(head_sound_ref, state)
+	ui_set_visible(body_sound_ref, state)
+	ui_set_visible(volume_ref, state)
+end
+
+--------------------------------------------------------------------------------
+-- Initilization code
+--------------------------------------------------------------------------------
+local function init_sound(sound_name, sound_file)
+	sound_names[#sound_names+1] = sound_name
+	sound_name_to_file[sound_name] = sound_file
+end
+
+local function init()
+	init_sound("Wood stop", "doors/wood_stop1.wav")
+	init_sound("Wood strain", "physics/wood/wood_strain7.wav")
+	init_sound("Wood plank impact", "physics/wood/wood_plank_impact_hard4.wav")
+	init_sound("Warning", "resource/warning.wav")
+
+	-- Setup serach path for hitsounds
+	local current_path = char_buffer(128)
+	current_directory(current_path, ffi.sizeof(current_path))
+	current_path = string.format("%s\\csgo\\sound\\hitsounds", ffi.string(current_path))
+	add_to_searchpath(current_path, "XGAME", 0)
+
+	-- Collect sound files and add them to the hit sound list
+	local sound_files = collect_files()
+	for i=1, #sound_files do
+		local file_name = sound_files[i]
+		init_sound(normalize_file_name(file_name), string.format("hitsounds/%s", file_name))
 	end
 
-    logged_grenades_full = total_nades
-    prepare_cmd()
+	enable_ref	  = uix.new_checkbox("LUA", "B", "Hit marker sound")
+	head_sound_ref  = ui_new_combobox("LUA", "B", "Head shot sound", sound_names)
+	body_sound_ref  = ui_new_combobox("LUA", "B", "Body shot sound", sound_names)
+	volume_ref	  = ui.new_slider("LUA", "B", "\nSound volume", 1, 100, 1, true, "%")
+
+	enable_ref:on("change", on_hit_sound_toggle)
+	enable_ref:on("player_hurt", on_player_hurt)
+	enable_ref:on("player_blind", on_player_blind)
 end
 
-local function grenade_limit_callback_eco()
-	local total_nades = ui_get(menu.grenades_2)
-
-	if #total_nades > 4 then
-		ui_set(menu.grenades_2, logged_grenades)
-		return
-	end
-
-    logged_grenades_eco = total_nades
-    prepare_cmd()
-end
-
---cmd handler
-local cmd_full = ""
-local cmd_eco = ""
-
-local function prepare_cmd()
-    --reset vars
-    cmd_full = ""
-    cmd_eco = ""
-
-    --full buy cmd
-    --secondary
-    cmd_full = cmd_full .. commands[ui_get(menu.secondary)] .. ";"
-    --utilities
-    local utility_purchase = ui_get(menu.utilities)
-    for i = 1, #utility_purchase do
-        cmd_full = cmd_full .. commands[utility_purchase[i]] .. ";"
-    end
-    --primary
-    cmd_full = cmd_full .. commands[ui_get(menu.primary)] .. ";"
-    --grenades
-    local grenade_purchase = ui_get(menu.grenades)
-    for i = 1, #grenade_purchase do
-        cmd_full = cmd_full .. commands[grenade_purchase[i]] .. ";"
-    end
-
-    --eco buy cmd
-    --secondary
-    cmd_eco = cmd_eco .. commands[ui_get(menu.secondary_2)] .. ";"
-    --utilities
-    local utility_purchase = ui_get(menu.utilities_2)
-    for i = 1, #utility_purchase do
-        cmd_eco = cmd_eco .. commands[utility_purchase[i]] .. ";"
-    end
-    --primary
-    local prim = commands[ui_get(menu.primary_2)]
-    cmd_eco = cmd_eco .. commands[ui_get(menu.primary_2)] .. ";"
-    --grenades
-    local grenade_purchase = ui_get(menu.grenades_2)
-    for i = 1, #grenade_purchase do
-        cmd_eco = cmd_eco .. commands[grenade_purchase[i]] .. ";"
-    end
-
-    calculate_weapon_prices()
-end
-
-local round_started = false
-
---callbacks
-local function on_net_update_end(e)
-    if round_started then
-        local money = entity_get_prop(entity_get_local_player(), "m_iAccount")
-
-        local threshold = ui_get(menu.threshold)
-
-        local price_threshold = 0
-
-        if ui_get(menu.cost_based) and (threshold == 0) then
-            price_threshold = weapon_cost
-        elseif (threshold ~= 0) then
-            price_threshold = ui_get(menu.threshold)
-        end
-
-        if money < price_threshold then
-            client_exec(cmd_eco)
-        else
-            client_exec(cmd_full)
-        end
-        
-        round_started = false
-    end
-end
-
-local function on_round_prestart(e)
-    round_started = true
-end
-
-local function on_player_spawn(e)
-    if not round_started and not e.inrestart and client_userid_to_entindex(e.userid) == entity_get_local_player() then 
-        round_started = true
-    end
-end
-
---visibility
-local function handle_vis()
-    local state = ui_get(menu.enabled)
-    local state2 = (not ui_get(menu.hide))
-    local state3 = ui_get(menu.cost_based)
-
-    ui_set_visible(menu.hide, state)
-
-    if state and state2 then
-        ui_set_visible(menu.primary, state)
-        ui_set_visible(menu.secondary, state)
-        ui_set_visible(menu.grenades, state)
-        ui_set_visible(menu.utilities, state)
-        ui_set_visible(menu.cost_based, state)
-        ui_set_visible(menu.threshold, state3)
-        ui_set_visible(menu.primary_2, state3)
-        ui_set_visible(menu.secondary_2, state3)
-        ui_set_visible(menu.grenades_2, state3)
-        ui_set_visible(menu.utilities_2, state3)
-    elseif not state2 then
-        ui_set_visible(menu.primary, state2)
-        ui_set_visible(menu.secondary, state2)
-        ui_set_visible(menu.grenades, state2)
-        ui_set_visible(menu.utilities, state2)
-        ui_set_visible(menu.cost_based, state2)
-        ui_set_visible(menu.threshold, state2)
-        ui_set_visible(menu.primary_2, state2)
-        ui_set_visible(menu.secondary_2, state2)
-        ui_set_visible(menu.grenades_2, state2)
-        ui_set_visible(menu.utilities_2, state2)
-    else
-        ui_set_visible(menu.primary, state)
-        ui_set_visible(menu.secondary, state)
-        ui_set_visible(menu.grenades, state)
-        ui_set_visible(menu.utilities, state)
-        ui_set_visible(menu.cost_based, state)
-        ui_set_visible(menu.threshold, state)
-        ui_set_visible(menu.primary_2, state)
-        ui_set_visible(menu.secondary_2, state)
-        ui_set_visible(menu.grenades_2, state)
-        ui_set_visible(menu.utilities_2, state)
-    end
-
-end
-
-local function on_script_toggle()
-    local state = ui.get(menu.enabled)
-    local update_callback = state and client_set_event_callback or client_unset_event_callback
-    update_callback("net_update_end", on_net_update_end)
-    update_callback("round_prestart", on_round_prestart)
-    update_callback("player_spawn", on_player_spawn)
-
-    handle_vis()
-end
-
---init
-do 
-    ui.set_callback(menu.enabled, on_script_toggle)
-    on_script_toggle()
-    ui.set_callback(menu.grenades, grenade_limit_callback_full)
-    ui.set_callback(menu.grenades_2, grenade_limit_callback_eco)
-
-    ui.set_callback(menu.primary, prepare_cmd)
-    ui.set_callback(menu.secondary, prepare_cmd)
-    ui.set_callback(menu.grenades, prepare_cmd)
-    ui.set_callback(menu.utilities, prepare_cmd)
-
-    ui.set_callback(menu.primary_2, prepare_cmd)
-    ui.set_callback(menu.secondary_2, prepare_cmd)
-    ui.set_callback(menu.grenades_2, prepare_cmd)
-    ui.set_callback(menu.utilities_2, prepare_cmd)
-
-    prepare_cmd()
-
-    ui.set_callback(menu.hide, handle_vis)
-    ui.set_callback(menu.cost_based, handle_vis)
-    handle_vis()
-end
+init()
