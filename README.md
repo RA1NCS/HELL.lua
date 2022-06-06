@@ -1,2 +1,0 @@
-# GameSenseLUAScripting
-Skeet Luas
