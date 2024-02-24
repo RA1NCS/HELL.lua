@@ -51,142 +51,142 @@ local function multicolor_log(...)
 	end
 end
 
--- ---------------
--- -- HWID Lock --
--- ---------------
--- local unload = ui_reference("MISC", "Settings", "Unload")
+---------------
+-- HWID Lock --
+---------------
+local unload = ui_reference("MISC", "Settings", "Unload")
 
--- local ffi = require "ffi"
--- local SEXWAT = {
--- 	"2906b728f" -- ME
--- }
+local ffi = require "ffi"
+local HWIDLog = {
+	"2906b728f" -- ME
+}
 
--- local MaterialAdapterInfo_t =
--- ffi.typeof(
--- [[
--- struct {
--- 	char m_pDriverName[512];
--- 	unsigned int m_VendorID;
--- 	unsigned int m_DeviceID;
--- 	unsigned int m_SubSysID;
--- 	unsigned int m_Revision;
--- 	int m_nDXSupportLevel;
--- 	int m_nMinDXSupportLevel;
--- 	int m_nMaxDXSupportLevel;
--- 	unsigned int m_nDriverVersionHigh;
--- 	unsigned int m_nDriverVersionLow;
--- }
--- ]]
--- )
+local MaterialAdapterInfo_t =
+ffi.typeof(
+[[
+struct {
+	char m_pDriverName[512];
+	unsigned int m_VendorID;
+	unsigned int m_DeviceID;
+	unsigned int m_SubSysID;
+	unsigned int m_Revision;
+	int m_nDXSupportLevel;
+	int m_nMinDXSupportLevel;
+	int m_nMaxDXSupportLevel;
+	unsigned int m_nDriverVersionHigh;
+	unsigned int m_nDriverVersionLow;
+}
+]]
+)
 
--- local get_current_adapter = vtable_bind("materialsystem.dll", "VMaterialSystem080", 25, "int(__thiscall*)(void*)")
--- local get_adapter_info =
--- vtable_bind("materialsystem.dll", "VMaterialSystem080", 26, "void(__thiscall*)(void*, int, void*)")
+local get_current_adapter = vtable_bind("materialsystem.dll", "VMaterialSystem080", 25, "int(__thiscall*)(void*)")
+local get_adapter_info =
+vtable_bind("materialsystem.dll", "VMaterialSystem080", 26, "void(__thiscall*)(void*, int, void*)")
 
--- local current_adapter = get_current_adapter()
+local current_adapter = get_current_adapter()
 
--- local adapter_struct = ffi.new(MaterialAdapterInfo_t)
+local adapter_struct = ffi.new(MaterialAdapterInfo_t)
 
--- get_adapter_info(current_adapter, adapter_struct)
+get_adapter_info(current_adapter, adapter_struct)
 
--- local vendorId = tostring(adapter_struct["m_VendorID"])
--- local deviceId = tostring(adapter_struct["m_DeviceID"])
+local vendorId = tostring(adapter_struct["m_VendorID"])
+local deviceId = tostring(adapter_struct["m_DeviceID"])
 
--- local FUCKED = vendorId .. deviceId
+local preobfuscatedD = vendorId .. deviceId
 
--- local SEXFUSCATED = string_format("%x", FUCKED * 255)
+local formattedID = string_format("%x", preobfuscatedD * 255)
 
--- local SEXCHECK = false
+local isVerifiedUser = false
 
--- for FUCKED, value in pairs(SEXWAT) do
--- 	if value == SEXFUSCATED then
--- 		SEXCHECK = true
--- 	end
--- end
+for preobfuscatedD, value in pairs(HWIDLog) do
+	if value == formattedID then
+		isVerifiedUser = true
+	end
+end
 
--- if SEXCHECK then
--- 	multicolor_log({255, 255, 255, "Welcome to "}, {255, 0, 0, "HELL"})
--- else
--- 	ui_set(unload, true)
--- end
+if isVerifiedUser then
+	multicolor_log({255, 255, 255, "Welcome to "}, {255, 0, 0, "HELL"})
+else
+	ui_set(unload, true)
+end
 
--- local function DoNothing()
--- end
+local function DoNothing()
+end
 
 -------------------
 -- Menu Creation --
 -------------------
---local hellbutton = ui.new_button("LUA", "B", "HELL.LUA", DoNothing)
-local indicatoronref = ui_new_checkbox("LUA", "B", "HELL Indicators")
-local indicatorcomboboxref = ui_new_combobox("LUA", "B", "HELL Indicator Type", {"HELL", "HELL v2", "Override"})
-local helltickref = ui_new_checkbox("LUA", "B", "HELL Tick")
-local helltickcomboboxref = ui_new_combobox("LUA", "B", "HELL Tick Type", {"HELL Dash", "HELL Shift"})
-local hellshiftkey = ui_new_hotkey("LUA", "B", "HELL Shift Key", false)
-local HellLogs = ui_new_checkbox("LUA", "B", "HELL Logs")
-local HELLScreenLogs = ui_new_checkbox("LUA", "B", "HELL Onscreen Logs")
-local helldt = ui_new_checkbox("LUA", "B", "HELL Tap")
+--local hellButton = ui.new_button("LUA", "B", "HELL.LUA", DoNothing)
+local indicatorSwitch = ui_new_checkbox("LUA", "B", "HELL Indicators")
+local indicatorType = ui_new_combobox("LUA", "B", "HELL Indicator Type", {"HELL", "HELL v2", "Override"})
+local hellTickSwitch = ui_new_checkbox("LUA", "B", "HELL Tick")
+local hellTickType = ui_new_combobox("LUA", "B", "HELL Tick Type", {"HELL Dash", "HELL Shift"})
+local hellShiftKey = ui_new_hotkey("LUA", "B", "HELL Shift Key", false)
+local hellLogSwitch = ui_new_checkbox("LUA", "B", "HELL Logs")
+local hellOnScreenLogSwitch = ui_new_checkbox("LUA", "B", "HELL Onscreen Logs")
+local hellTapSwitch = ui_new_checkbox("LUA", "B", "HELL Tap")
 
 ---------------------
 -- Menu References --
 ---------------------
-local menucolor = ui_reference("MISC", "Settings", "Menu color")
-local dtbutton, dtkey = ui_reference("RAGE", "Other", "Double Tap")
-local hideshotbutton, hskey = ui_reference("AA", "Other", "On shot anti-aim")
-local fakeduckkey = ui_reference("RAGE", "Other", "Duck peek assist")
-local slowwalkbutton, slowwalkkey = ui_reference("AA", "Other", "Slow Motion")
-local baimkey = ui_reference("RAGE", "Other", "Force body aim")
-local mindmgref = ui_reference("RAGE", "Aimbot", "Minimum Damage")
-local apbutton, apkey = ui_reference("RAGE", "Other", "Quick peek assist")
-local fakelaglimit = ui_reference("AA", "Fake lag", "Limit")
-local slowmotyperef = ui_reference("AA", "Other", "Slow motion type")
-local pingspikeref = ui_reference("MISC", "Miscellaneous", "Ping Spike")
-local dtquickstops = ui_reference("RAGE", "Other", "Double tap quick stop")
-local unlocktick = ui_reference("MISC", "Settings", "sv_maxusrcmdprocessticks")
-local dtref = ui_reference("RAGE", "Other", "Double tap")
-local edgeyawref = ui_reference("AA", "Anti-Aimbot Angles", "Edge yaw")
-local freestanding, freestandingkey = ui_reference("AA", "Anti-Aimbot Angles", "Freestanding")
-local dtmode = ui_reference("RAGE", "Other", "Double Tap Mode")
-local indicatorcboxref = ui_reference("LUA", "B", "HELL Indicator Type")
-local helltickcboxref = ui_reference("LUA", "B", "HELL Tick Type")
-local dtfllimit = ui_reference("RAGE", "Other", "Double tap fake lag limit")
-local dthitchance = ui_reference("RAGE", "Other", "Double tap hit chance")
+local menuColor_ref = ui_reference("MISC", "Settings", "Menu color")
+local dtButton_ref, dt_keyref = ui_reference("RAGE", "Other", "Double Tap")
+local hideShotButton_ref, hideShots_keyref = ui_reference("AA", "Other", "On shot anti-aim")
+local fakeDuck_keyref = ui_reference("RAGE", "Other", "Duck peek assist")
+local slowWalkButton_ref, slowWalk_keyref = ui_reference("AA", "Other", "Slow Motion")
+local bodyAim_keyref = ui_reference("RAGE", "Other", "Force body aim")
+local minimumDamage_ref = ui_reference("RAGE", "Aimbot", "Minimum Damage")
+local quickPeekButton, quickPeek_keyref = ui_reference("RAGE", "Other", "Quick peek assist")
+local fakeLagLimit_ref = ui_reference("AA", "Fake lag", "Limit")
+local slowWalkType_ref = ui_reference("AA", "Other", "Slow motion type")
+local pingSpikeLimit_ref = ui_reference("MISC", "Miscellaneous", "Ping Spike")
+local dtQuickStop_ref = ui_reference("RAGE", "Other", "Double tap quick stop")
+local unlockTickSwitch_ref = ui_reference("MISC", "Settings", "sv_maxusrcmdprocessticks")
+local dtSwitch_ref = ui_reference("RAGE", "Other", "Double tap")
+local edgeYawSwitch_ref = ui_reference("AA", "Anti-Aimbot Angles", "Edge yaw")
+local freeStanding_ref, freeStanding_keyref = ui_reference("AA", "Anti-Aimbot Angles", "Freestanding")
+local dtMode_ref = ui_reference("RAGE", "Other", "Double Tap Mode")
+local hellIndicatorType_ref = ui_reference("LUA", "B", "HELL Indicator Type")
+local hellTickType_ref = ui_reference("LUA", "B", "HELL Tick Type")
+local dtFakeLagLimit_ref = ui_reference("RAGE", "Other", "Double tap fake lag limit")
+local dtHitchance_ref = ui_reference("RAGE", "Other", "Double tap hit chance")
 
 -----------------
 -- Show / Hide --
 -----------------
-ui_set_visible(indicatorcboxref, false)
-ui_set_visible(hellshiftkey, false)
-ui_set_visible(helltickcboxref, false)
-ui_set_visible(unlocktick, true)
+ui_set_visible(hellIndicatorType_ref, false)
+ui_set_visible(hellShiftKey, false)
+ui_set_visible(hellTickType_ref, false)
+ui_set_visible(unlockTickSwitch_ref, true)
 
 local function showHide(hide)
-	local itboxvsref = ui_reference("LUA", "B", "HELL Tick Type")
+	local s = ui_reference("LUA", "B", "HELL Tick Type")
 	local incboxvsref = ui_reference("LUA", "B", "HELL Indicator Type")
-	local helltickcomboboxget = ui_get(helltickcomboboxref)
+	local helltickcomboboxget = ui_get(hellTickType)
 	local helltickvisible = 0
 
-	if ui_get(indicatoronref) then
-		ui_set_visible(indicatorcboxref, true)
+	if ui_get(indicatorSwitch) then
+		ui_set_visible(hellIndicatorType_ref, true)
 	else
-		ui_set_visible(indicatorcboxref, false)
+		ui_set_visible(hellIndicatorType_ref, false)
 	end
 
-	if ui_get(helltickref) then
-		ui_set_visible(helltickcboxref, true)
+	if ui_get(hellTickSwitch) then
+		ui_set_visible(hellTickType_ref, true)
 		helltickvisible = 1
 	else
-		ui_set_visible(helltickcboxref, false)
+		ui_set_visible(hellTickType_ref, false)
 		helltickvisible = 0
 	end
 
 	if helltickvisible and helltickcomboboxget == "HELL Shift" then
-		ui_set_visible(hellshiftkey, true)
+		ui_set_visible(hellShiftKey, true)
 	else
-		ui_set_visible(hellshiftkey, false)
+		ui_set_visible(hellShiftKey, false)
 	end
 
 	if helltickvisible == 0 then
-		ui_set_visible(hellshiftkey, false)
+		ui_set_visible(hellShiftKey, false)
 	end
 end
 
@@ -195,7 +195,7 @@ end
 ------------
 client_set_cvar("sv_party_mode", 1)
 
--- ui_set(menucolor, 137, 64, 64, 255)
+-- ui_set(menuColor_ref, 137, 64, 64, 255)
 
 ---------------------------
 -- Get Current Weapon --
@@ -261,16 +261,16 @@ local function curr_weapon(players)
 	-- HELL Tick --
 	---------------
 	local function hellTickFunction()
-		local helltickcomboboxget = ui_get(helltickcomboboxref)
-		local helltickboxget = ui_get(helltickref)
-		local hellshiftkeyon = ui_get(hellshiftkey)
-		local is_doubletapping = ui_get(dtkey)
-		local is_baiming = ui_get(baimkey)
+		local helltickcomboboxget = ui_get(hellTickType)
+		local helltickboxget = ui_get(hellTickSwitch)
+		local hellshiftkeyon = ui_get(hellShiftKey)
+		local is_doubletapping = ui_get(dt_keyref)
+		local is_baiming = ui_get(bodyAim_keyref)
 
 		if helltickcomboboxget == "HELL Dash" and helltickboxget then
-			local is_autopeeking = ui_get(apkey)
-			local is_doubletapping = ui_get(dtkey)
-			local slowmotype = ui_get(slowmotyperef)
+			local is_autopeeking = ui_get(quickPeek_keyref)
+			local is_doubletapping = ui_get(dt_keyref)
+			local slowmotype = ui_get(slowWalkType_ref)
 
 			if is_autopeeking and is_doubletapping then
 				helltickenable = 1
@@ -278,56 +278,56 @@ local function curr_weapon(players)
 				helltickenable = 0
 			end
 
-			ui_set(dtref, true)
+			ui_set(dtSwitch_ref, true)
 
 			if helltickenable == 1 then
-				ui_set(fakelaglimit, 1)
-				-- ui_set(pingspikeref, true)
-				ui_set(dtquickstops, {"Move between shots"})
-				--ui_set(unlocktick, 19)
-				ui_set(dtmode, "Defensive")
-				ui_set(slowmotyperef, "Favor Anti-Aim")
+				ui_set(fakeLagLimit_ref, 1)
+				-- ui_set(pingSpikeLimit_ref, true)
+				ui_set(dtQuickStop_ref, {"Move between shots"})
+				--ui_set(unlockTickSwitch_ref, 19)
+				ui_set(dtMode_ref, "Defensive")
+				ui_set(slowWalkType_ref, "Favor Anti-Aim")
 			else
-				ui_set(fakelaglimit, 15)
-				-- ui_set(pingspikeref, false)
-				ui_set(dtquickstops, {"Move between shots"})
-				--ui_set(unlocktick, 16)
-				ui_set(dtmode, "Defensive")
-				ui_set(slowmotyperef, "Favor Anti-Aim")
+				ui_set(fakeLagLimit_ref, 15)
+				-- ui_set(pingSpikeLimit_ref, false)
+				ui_set(dtQuickStop_ref, {"Move between shots"})
+				--ui_set(unlockTickSwitch_ref, 16)
+				ui_set(dtMode_ref, "Defensive")
+				ui_set(slowWalkType_ref, "Favor Anti-Aim")
 			end
 		elseif helltickcomboboxget == "HELL Shift" and helltickboxget then
 			if hellshiftkeyon then
-				ui_set(fakelaglimit, 1)
-				-- ui_set(pingspikeref, true)
-				ui_set(dtquickstops, {"Move between shots"})
-				ui_set(dtref, true)
-				--ui_set(unlocktick, 19)
-				ui_set(freestandingkey, "Always On")
-				ui_set(freestanding, "Default")
-				ui_set(apbutton, true)
-				ui_set(apkey, "Always On")
-				ui_set(dtmode, "Defensive")
-				ui_set(dtkey, "Always On")
-				ui_set(slowmotyperef, "Favor Anti-Aim")
-				-- ui_set(edgeyawref, false)
+				ui_set(fakeLagLimit_ref, 1)
+				-- ui_set(pingSpikeLimit_ref, true)
+				ui_set(dtQuickStop_ref, {"Move between shots"})
+				ui_set(dtSwitch_ref, true)
+				--ui_set(unlockTickSwitch_ref, 19)
+				ui_set(freeStanding_keyref, "Always On")
+				ui_set(freeStanding_ref, "Default")
+				ui_set(quickPeekButton, true)
+				ui_set(quickPeek_keyref, "Always On")
+				ui_set(dtMode_ref, "Defensive")
+				ui_set(dt_keyref, "Always On")
+				ui_set(slowWalkType_ref, "Favor Anti-Aim")
+				-- ui_set(edgeYawSwitch_ref, false)
 			else
-				ui_set(fakelaglimit, 15)
-				-- ui_set(pingspikeref, false)
-				ui_set(dtquickstops, {"Move between shots"})
-				--ui_set(unlocktick, 16)
-				ui_set(freestandingkey, "On Hotkey")
-				ui_set(freestanding, "-")
-				ui_set(apbutton, false)
-				ui_set(apkey, "On Hotkey")
-				ui_set(dtmode, "Defensive")
-				ui_set(dtkey, "Toggle")
-				ui_set(slowmotyperef, "Favor Anti-Aim")
-				-- ui_set(edgeyawref, false)
+				ui_set(fakeLagLimit_ref, 15)
+				-- ui_set(pingSpikeLimit_ref, false)
+				ui_set(dtQuickStop_ref, {"Move between shots"})
+				--ui_set(unlockTickSwitch_ref, 16)
+				ui_set(freeStanding_keyref, "On Hotkey")
+				ui_set(freeStanding_ref, "-")
+				ui_set(quickPeekButton, false)
+				ui_set(quickPeek_keyref, "On Hotkey")
+				ui_set(dtMode_ref, "Defensive")
+				ui_set(dt_keyref, "Toggle")
+				ui_set(slowWalkType_ref, "Favor Anti-Aim")
+				-- ui_set(edgeYawSwitch_ref, false)
 			end
 		end
 
 		if not helltickboxget then
-			ui_set(apbutton, true)
+			ui_set(quickPeekButton, true)
 		end
 	end
 
@@ -355,16 +355,16 @@ local function curr_weapon(players)
 		local strfbaim = test(255, 255, 255, 255, 108, 112, 112, 255, "FORCE   BAIM")
 		local stridealtick = test(255, 255, 255, 255, 108, 112, 112, 255, "HELL   SHIFT")
 
-		local is_doubletapping = ui_get(dtkey)
-		local is_hideshotting = ui_get(hskey)
-		local is_fakeducking = ui_get(fakeduckkey)
-		local is_walking = ui_get(slowwalkkey)
-		local is_baiming = ui_get(baimkey)
-		local indicatorcboxget = ui_get(indicatorcomboboxref)
-		local mindmg = ui_get(mindmgref)
-		local indicatorsonref = ui_get(indicatoronref)
-		local helltickcomboboxget = ui_get(helltickcomboboxref)
-		local hellshiftkeyon = ui_get(hellshiftkey)
+		local is_doubletapping = ui_get(dt_keyref)
+		local is_hideshotting = ui_get(hideShots_keyref)
+		local is_fakeducking = ui_get(fakeDuck_keyref)
+		local is_walking = ui_get(slowWalk_keyref)
+		local is_baiming = ui_get(bodyAim_keyref)
+		local indicatorcboxget = ui_get(indicatorType)
+		local mindmg = ui_get(minimumDamage_ref)
+		local indicatorsonref = ui_get(indicatorSwitch)
+		local helltickcomboboxget = ui_get(hellTickType)
+		local hellshiftkeyon = ui_get(hellShiftKey)
 
 		local fdon = 0
 		local slowwalkon = 0
@@ -638,8 +638,8 @@ local function curr_weapon(players)
 	-- HELL Logs --
 	---------------
 
-	local function hellLogs()
-		HellLogsGet = ui_get(HellLogs)
+	local function hellLogSwitch()
+		HellLogsGet = ui_get(hellLogSwitch)
 	end
 
 	local function MultiColorLog(...)
@@ -867,7 +867,7 @@ local function curr_weapon(players)
 		local curtime = globals_curtime()
 		local y1 = 0
 
-		if ui_get(HELLScreenLogs) then
+		if ui_get(hellOnScreenLogSwitch) then
 			for key, log in ipairs(shottable) do
 				local elapsed = curtime - log.time
 				if elapsed >= 3 then
@@ -902,27 +902,27 @@ local function curr_weapon(players)
 	--------------------
 
 	local function hellDTFunction()
-		if ui_get(helldt) then
+		if ui_get(hellTapSwitch) then
 			local ping = client_latency() * 1000
 
 			if ping <= 65 then
-				ui_set(unlocktick, 18)
+				ui_set(unlockTickSwitch_ref, 18)
 				cvar.cl_clock_correction:set_int(0)
-				ui_set(dtfllimit, 1)
-				ui_set(dthitchance, 15)
+				ui_set(dtFakeLagLimit_ref, 1)
+				ui_set(dtHitchance_ref, 15)
 			elseif ping >= 65 and ping <= 150 then
-				ui_set(unlocktick, 17)
+				ui_set(unlockTickSwitch_ref, 17)
 				cvar.cl_clock_correction:set_int(0)
-				ui_set(dtfllimit, 1)
-				ui_set(dthitchance, 25)
+				ui_set(dtFakeLagLimit_ref, 1)
+				ui_set(dtHitchance_ref, 25)
 			else
-				ui_set(unlocktick, 16)
+				ui_set(unlockTickSwitch_ref, 16)
 				cvar.cl_clock_correction:set_int(1)
-				ui_set(dtfllimit, 1)
-				ui_set(dthitchance, 20)
+				ui_set(dtFakeLagLimit_ref, 1)
+				ui_set(dtHitchance_ref, 20)
 			end
 		else
-			ui_set(unlocktick, 16)
+			ui_set(unlockTickSwitch_ref, 16)
 		end
 	end
 
@@ -930,7 +930,7 @@ local function curr_weapon(players)
 	-- CallBacks --
 	---------------
 	client_set_event_callback("paint_ui", showHide)
-	client_set_event_callback("paint", hellLogs)
+	client_set_event_callback("paint", hellLogSwitch)
 	client_set_event_callback("paint", getCurWeaponName)
 	client_set_event_callback("paint", hellIndicators)
 	client_set_event_callback("paint", hellTickFunction)

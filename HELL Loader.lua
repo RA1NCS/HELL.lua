@@ -22,7 +22,7 @@ local http = require "gamesense/http"
 -----------------
 
 
-local function loadstringowo()
+local function loadString()
     http.get("https://raw.githubusercontent.com/RA1NCS/GameSenseLUAScripting/main/HELL.LUA", function(success, response)
         if not success or response.status ~= 200   then
             return
@@ -31,4 +31,4 @@ local function loadstringowo()
     end)
 end
 
-ui.new_button("LUA", "B", "HELL.LUA", loadstringowo)
+ui.new_button("LUA", "B", "HELL.LUA", loadString)
